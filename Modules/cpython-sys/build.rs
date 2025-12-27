@@ -2,7 +2,7 @@ use std::env;
 use std::path::{Path, PathBuf};
 
 fn main() {
-    println!("cargo::rerun-if-env-changed=LIBPYTHON");
+    println!("cargo::rerun-if-env-changed=LIBRARY");
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let srcdir = manifest_dir
         .parent()
@@ -13,7 +13,7 @@ fn main() {
     if gil_disabled(srcdir, builddir.as_deref()) {
         println!("cargo:rustc-cfg=py_gil_disabled");
     }
-    if let Ok(libpython) = env::var("LIBPYTHON")
+    if let Ok(libpython) = env::var("LIBRARY")
         && libpython.len() != 0
     {
         println!("cargo::rustc-link-lib=static={}", libpython);
