@@ -22,10 +22,15 @@ jobs:
     env:
       ARCH: ${{ inputs.arch }}
       IncludeFreethreaded: true
+      IncludeLLVM: true
+      LIBCLANG_PATH: "${{ github.workspace }}\\externals\\llvm-21.1.4.0\\bin"
     steps:
     - uses: actions/checkout@v4
       with:
         persist-credentials: false
+    - uses: dtolnay/rust-toolchain@1.91.1
+      with:
+        targets: i686-pc-windows-msvc,x86_64-pc-windows-msvc,aarch64-pc-windows-msvc
     - name: Build CPython installer
       run: ./Tools/msi/build.bat --doc -"${ARCH}"
       shell: bash

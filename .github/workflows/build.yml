@@ -167,6 +167,15 @@ jobs:
       arch: ${{ matrix.arch }}
       free-threading: ${{ matrix.free-threading }}
 
+  build-windows-system-llvm:
+    name: Windows (Chocolatey LLVM)
+    needs: build-context
+    if: fromJSON(needs.build-context.outputs.run-windows-tests)
+    uses: ./.github/workflows/reusable-windows.yml
+    with:
+      arch: x64
+      llvm-from-choco: true
+
   build-windows-msi:
     # ${{ '' } is a hack to nest jobs under the same sidebar category.
     name: Windows MSI${{ '' }}  # zizmor: ignore[obfuscation]

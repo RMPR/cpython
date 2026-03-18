@@ -7,6 +7,11 @@ on:
         description: CPU architecture
         required: true
         type: string
+      llvm-from-choco:
+        description: Whether to install LLVM from Chocolatey and expose LIBCLANG_PATH
+        required: false
+        type: boolean
+        default: false
       free-threading:
         description: Whether to compile CPython in free-threading mode
         required: false
@@ -29,6 +34,24 @@ jobs:
     - uses: actions/checkout@v4
       with:
         persist-credentials: false
+    - uses: dtolnay/rust-toolchain@1.91.1
+      with:
+        targets: i686-pc-windows-msvc,x86_64-pc-windows-msvc,aarch64-pc-windows-msvc
+    - name: Install LLVM from Chocolatey
+      if: fromJSON(inputs.llvm-from-choco)
+      shell: cmd
+      run: |
+        choco install llvm --allow-downgrade --no-progress --version 21.1.0
+        if not exist "C:\Program Files\LLVM\bin\libclang.dll" exit /b 1
+        echo IncludeLLVM=false>> "%GITHUB_ENV%"
+        echo LIBCLANG_PATH=C:\Program Files\LLVM\bin>> "%GITHUB_ENV%"
+        echo LLVMInstallDir=C:\Program Files\LLVM>> "%GITHUB_ENV%"
+    - name: Use bundled LLVM
+      if: ${{ !fromJSON(inputs.llvm-from-choco) }}
+      shell: cmd
+      run: |
+        echo IncludeLLVM=true>> "%GITHUB_ENV%"
+        echo LIBCLANG_PATH=%GITHUB_WORKSPACE%\externals\llvm-21.1.4.0\bin>> "%GITHUB_ENV%"
     - name: Register MSVC problem matcher
       if: inputs.arch != 'Win32'
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
