@@ -126,7 +126,7 @@ if "$(Configuration)"=="Debug" (set "PY_DEBUG=1") else (set "PY_DEBUG=")
 if "$(DisableGil)"=="true" (set "PY_GIL_DISABLED=1") else (set "PY_GIL_DISABLED=")
 where cargo &gt;NUL 2&gt;NUL || (echo WARNING: cargo was not found on PATH, skipping _base64 &amp; exit /b 0)
 if not "$(LibClangPath)"=="" set "LIBCLANG_PATH=$(LibClangPath)"
-if "$(LibClangPath)"=="" if not defined LIBCLANG_PATH (echo ERROR: libclang.dll was not found. Install LLVM or the Visual Studio Clang tools and set LIBCLANG_PATH. &amp; exit /b 1)
+if "$(LibClangPath)"=="" if not defined LIBCLANG_PATH (echo WARNING: libclang.dll was not found, skipping _base64. Install LLVM or the Visual Studio Clang tools and set LIBCLANG_PATH. &amp; exit /b 0)
 if not exist "$(CargoTargetDirNoSlash)" mkdir "$(CargoTargetDirNoSlash)"
 set "CARGO_TARGET_DIR=$(CargoTargetDirNoSlash)"
 set "PYTHON_BUILD_DIR=$(PythonBuildDir)"
