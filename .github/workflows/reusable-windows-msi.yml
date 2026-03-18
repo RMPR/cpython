@@ -22,8 +22,6 @@ jobs:
     env:
       ARCH: ${{ inputs.arch }}
       IncludeFreethreaded: true
-      IncludeLLVM: true
-      LIBCLANG_PATH: "${{ github.workspace }}\\externals\\llvm-21.1.4.0\\bin"
     steps:
     - uses: actions/checkout@v4
       with:
@@ -31,6 +29,13 @@ jobs:
     - uses: dtolnay/rust-toolchain@1.91.1
       with:
         targets: i686-pc-windows-msvc,x86_64-pc-windows-msvc,aarch64-pc-windows-msvc
+    - name: Install LLVM for bindgen
+      shell: cmd
+      run: |
+        choco install llvm --allow-downgrade --no-progress --version 21.1.0
+        if not exist "C:\Program Files\LLVM\bin\libclang.dll" exit /b 1
+        echo LIBCLANG_PATH=C:\Program Files\LLVM\bin>> "%GITHUB_ENV%"
+        echo LLVMInstallDir=C:\Program Files\LLVM>> "%GITHUB_ENV%"
     - name: Build CPython installer
       run: ./Tools/msi/build.bat --doc -"${ARCH}"
       shell: bash
