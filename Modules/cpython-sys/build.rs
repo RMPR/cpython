@@ -15,7 +15,12 @@ fn main() {
         println!("cargo:rustc-cfg=py_gil_disabled");
     }
     println!("cargo::rustc-check-cfg=cfg(py_gil_disabled)");
-    generate_c_api_bindings(srcdir, builddir.as_deref(), out_path.as_path(), gil_disabled);
+    generate_c_api_bindings(
+        srcdir,
+        builddir.as_deref(),
+        out_path.as_path(),
+        gil_disabled,
+    );
 }
 
 // Bindgen depends on build-time env and, on iOS, can also inherit the
@@ -69,7 +74,12 @@ fn env_var_is_truthy(name: &str) -> bool {
     )
 }
 
-fn generate_c_api_bindings(srcdir: &Path, builddir: Option<&str>, out_path: &Path, gil_disabled: bool) {
+fn generate_c_api_bindings(
+    srcdir: &Path,
+    builddir: Option<&str>,
+    out_path: &Path,
+    gil_disabled: bool,
+) {
     let mut builder = bindgen::Builder::default().header("wrapper.h");
 
     // Suppress all clang warnings (deprecation warnings, etc.)
@@ -240,7 +250,10 @@ fn patch_windows_imported_pointer_globals(bindings: String, dll_name: &str) -> S
 
     while index < lines.len() {
         if lines[index] == "unsafe extern \"C\" {"
-            && lines.get(index + 1).and_then(|l| parse_pointer_static_decl(l)).is_some()
+            && lines
+                .get(index + 1)
+                .and_then(|l| parse_pointer_static_decl(l))
+                .is_some()
             && lines.get(index + 2).is_some_and(|l| l.trim() == "}")
         {
             patched.push_str(&format!(
