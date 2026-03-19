@@ -30,6 +30,8 @@ fn emit_rerun_instructions(builddir: Option<&str>) {
     for var in [
         "IPHONEOS_DEPLOYMENT_TARGET",
         "LLVM_TARGET",
+        "PY_DEBUG",
+        "PY_GIL_DISABLED",
         "PYTHON_BUILD_DIR",
         "PY_CC",
         "PY_CPPFLAGS",
@@ -68,10 +70,9 @@ fn gil_disabled(srcdir: &Path, builddir: Option<&str>) -> bool {
 }
 
 fn env_var_is_truthy(name: &str) -> bool {
-    matches!(
-        env::var(name).as_deref(),
-        Ok("1") | Ok("true") | Ok("TRUE") | Ok("yes") | Ok("YES")
-    )
+    env::var(name)
+        .map(|v| matches!(v.to_ascii_lowercase().as_str(), "1" | "true" | "yes"))
+        .unwrap_or(false)
 }
 
 fn generate_c_api_bindings(
