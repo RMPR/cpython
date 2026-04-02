@@ -56,6 +56,13 @@ fn emit_rerun_instructions(builddir: Option<&str>) {
 /// headers.  We pass -resource-dir to bindgen's clang so it picks up those
 /// headers instead of the broken libclang-18 ones.
 fn newest_clang_resource_dir() -> Option<PathBuf> {
+    // On Windows, derive the resource directory from LIBCLANG_PATH so that
+    // bindgen uses headers matching the libclang.dll it loads, rather than
+    // picking up a different, incompatible, system LLVM installation
+    if cfg!(windows) {
+        return clang_resource_dir_from_libclang_path();
+    }
+
     let base = Path::new("/usr/lib");
     let mut best: Option<(u32, PathBuf)> = None;
     for entry in std::fs::read_dir(base).ok()?.flatten() {
@@ -66,6 +73,34 @@ fn newest_clang_resource_dir() -> Option<PathBuf> {
         {
             // Resource dir: /usr/lib/llvm-<N>/lib/clang/<N>
             let resource_dir = entry.path().join("lib").join("clang").join(ver_str);
+            if resource_dir.join("include").is_dir()
+                && best.as_ref().map_or(true, |(v, _)| ver > *v)
+            {
+                best = Some((ver, resource_dir));
+            }
+        }
+    }
+    best.map(|(_, p)| p)
+}
+
+/// Derive the clang resource directory from LIBCLANG_PATH.
+///
+/// When LIBCLANG_PATH points to e.g. `...\bin`, the resource directory is
+/// at `...\lib\clang\<version>`.  We pick the highest version found.
+fn clang_resource_dir_from_libclang_path() -> Option<PathBuf> {
+    let libclang_path = env::var("LIBCLANG_PATH").ok()?;
+    let bin_dir = Path::new(&libclang_path);
+    // LIBCLANG_PATH typically points to a `bin` directory; the resource
+    // dir lives under the sibling `lib/clang/<version>`.
+    let clang_lib_dir = bin_dir.parent()?.join("lib").join("clang");
+    let mut best: Option<(u32, PathBuf)> = None;
+    for entry in std::fs::read_dir(&clang_lib_dir).ok()?.flatten() {
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        // Version directories can be just a major number (e.g. "18") or
+        // a full dotted version (e.g. "18.1.3"). Parse the major part.
+        if let Ok(ver) = name.split('.').next().unwrap_or("").parse::<u32>() {
+            let resource_dir = entry.path();
             if resource_dir.join("include").is_dir()
                 && best.as_ref().map_or(true, |(v, _)| ver > *v)
             {
