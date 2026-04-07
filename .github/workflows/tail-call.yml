@@ -2,11 +2,11 @@ name: Tail calling interpreter
 on:
   pull_request:
     paths: &paths
-      - '.github/workflows/tail-call.yml'
-      - 'Python/bytecodes.c'
-      - 'Python/ceval.c'
-      - 'Python/ceval_macros.h'
-      - 'Python/generated_cases.c.h'
+      - ".github/workflows/tail-call.yml"
+      - "Python/bytecodes.c"
+      - "Python/ceval.c"
+      - "Python/ceval_macros.h"
+      - "Python/generated_cases.c.h"
   push:
     paths: *paths
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: '3.11'
+          python-version: "3.11"
       - name: Install dependencies
         run: |
           brew update
@@ -80,7 +80,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: '3.11'
+          python-version: "3.11"
       - name: Build
         run: |
           # On ubuntu-26.04 image, clang is clang-21 by default
